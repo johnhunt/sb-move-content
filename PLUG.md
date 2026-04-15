@@ -33,25 +33,39 @@ end
 -- Build the filterBox options: a pinned "new page" entry, then all existing
 -- pages sorted by lastModified desc (most recent first), excluding the
 -- current page.
+--
+-- Note: p.lastModified is a string (ISO timestamp). ISO 8601 strings sort
+-- lexicographically in chronological order, so we compare them directly
+-- with `>` — do NOT try to negate them (attempting `-string` blows up with
+-- "attempt to unm a 'string'").
 function moveContent.buildPickerOptions(currentPage)
+  -- Collect and sort pages (most recently modified first).
+  local pages = {}
+  for _, p in ipairs(space.listPages()) do
+    if p.name != currentPage then
+      table.insert(pages, p)
+    end
+  end
+  table.sort(pages, function(a, b)
+    return (a.lastModified or "") > (b.lastModified or "")
+  end)
+
+  -- orderId is used by the filterBox as a tie-breaker on fuzzy-match score,
+  -- with lower values ranked higher. Use a large negative integer for the
+  -- "new page" sentinel so it pins to the top; then positive integers
+  -- starting at 1 preserve the sort order for real pages.
   local options = {
     {
       name = moveContent.newPageOption,
       hint = "Create",
-      -- Very negative orderId keeps this pinned at the top regardless of
-      -- the fuzzy-match score.
-      orderId = -math.huge
+      orderId = -1000000000
     }
   }
-  for _, p in ipairs(space.listPages()) do
-    if p.name != currentPage then
-      table.insert(options, {
-        name = p.name,
-        -- Negate lastModified so "more recent" = "smaller orderId" = higher
-        -- in the list.
-        orderId = -(p.lastModified or 0)
-      })
-    end
+  for i, p in ipairs(pages) do
+    table.insert(options, {
+      name = p.name,
+      orderId = i
+    })
   end
   return options
 end
