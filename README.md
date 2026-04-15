@@ -40,14 +40,16 @@ To update later, run **Library: Update All** (or **Update** from the Library Man
 
 1. Select some content on any page.
 2. Open the command palette and run **Selection: Move Content**.
-3. Enter the name of the target page when prompted. You can type the name of an existing page (to append) or a new page name (to create).
+3. A fuzzy-filter page picker appears listing every page in your space (most-recently-modified first, current page excluded). Either:
+   - Type to filter, then pick an existing page — the selection is appended to it, or
+   - Pick **✨ New page…** at the top of the list to create a new target, then enter its name.
 
-A notification confirms the move and links to the target page.
+A flash notification confirms the move and references the target page.
 
 ### Edge cases
 
 - Empty selection → error notification, no change.
-- Empty target name → error notification, no change.
+- Empty target name (when creating) → error notification, no change.
 - Target page is the current page → rejected (would be a no-op at best, destructive at worst).
 - Existing target content → separated from the appended selection by a blank line.
 
